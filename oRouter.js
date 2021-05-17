@@ -4,13 +4,13 @@
  * @description Set only if your origin url has a static prefix.
  * Example: http:/yourdomain.com/prefixExample -> originPrefix = '/prefixExample'
  */
-class Router {
+class oRouter {
     static originPrefix = '';
     static routingTable = {};
     static defaultView = null;
 
     static redirect(path, params){
-        Router.route(path, params);
+        oRouter.route(path, params);
     }
 
     static changeState(path, params){
@@ -29,9 +29,9 @@ class Router {
     }
 
 	static route(givenPath, givenParams){
-        Router.#setEvent();
-        const path = givenPath ?? (Router.originPrefix ? location.pathname.replace(Router.originPrefix, '') : location.pathname);
-        const [searchParams, searchString] = Router.#searchQueryParser(givenPath ?? location.search);
+        oRouter.#setEvent();
+        const path = givenPath ?? (oRouter.originPrefix ? location.pathname.replace(oRouter.originPrefix, '') : location.pathname);
+        const [searchParams, searchString] = oRouter.#searchQueryParser(givenPath ?? location.search);
 
         const routingParams = {
             url: path + searchString,
@@ -44,16 +44,16 @@ class Router {
 
         const splittedPath = path.split('/').filter(part => part !== '');
         if(!splittedPath.length){
-            if(!Router.defaultView || !(typeof Router.defaultView === 'function')){
+            if(!oRouter.defaultView || !(typeof oRouter.defaultView === 'function')){
                 throw new Error('Property defaultView not set.');
             }
-            Router.changeState(path, routingParams);
-            return Router.defaultView(routingParams);
+            oRouter.changeState(path, routingParams);
+            return oRouter.defaultView(routingParams);
         }
 
-        const routesFiltered = Router.#routesFilter(splittedPath);
+        const routesFiltered = oRouter.#routesFilter(splittedPath);
         if(!routesFiltered.length)
-            return Router.#notFound(routingParams)
+            return oRouter.#notFound(routingParams)
 
         const foundRoute = routesFiltered[0];
         foundRoute.splitted.forEach((part, index) => {
@@ -62,8 +62,8 @@ class Router {
                 routingParams[paramName] = splittedPath[index];
             }
         })
-        Router.changeState(path, routingParams);
-        return Router.routingTable[foundRoute.full](routingParams);
+        oRouter.changeState(path, routingParams);
+        return oRouter.routingTable[foundRoute.full](routingParams);
     }
 
 
@@ -94,24 +94,24 @@ class Router {
 
     static #notFound(routingParams){
         const { path } = routingParams;
-        if(!Router.routingTable['404']){
+        if(!oRouter.routingTable['404']){
             throw new Error('404 not found');
         }
-        Router.changeState(path, routingParams);
-        return Router.routingTable['404'](routingParams);
+        oRouter.changeState(path, routingParams);
+        return oRouter.routingTable['404'](routingParams);
     }
 
     static #setEvent(){
         if(!window.onpopstate){
             window.onpopstate = function(e){
                 e.preventDefault();
-                Router.route();
+                oRouter.route();
             }
         }
     }
 
     static #routesFilter(splittedPath){
-        const routes = Object.keys(Router.routingTable).map(route => ({
+        const routes = Object.keys(oRouter.routingTable).map(route => ({
             full: route,
             splitted: route.split('/').filter(route => route !== '')
         }));
@@ -123,4 +123,4 @@ class Router {
         return routesFiltered;
     }
 }
-export default Router;
+export default oRouter;
