@@ -16,10 +16,10 @@ class oRouter {
     static changeState(path, params){
         try {
             if(params.url === window.location.pathname){
-                window.history.replaceState(params, document.title, path);
+                window.history.replaceState(JSON.parse(JSON.stringify(params)), document.title, path);
             }else{
                 const state = { ...params, redirectedFrom: window.location.pathname };
-                window.history.pushState(state, document.title, path);
+                window.history.pushState(JSON.parse(JSON.stringify(state)), document.title, path);
             }
             return true;
         }catch (e) {
@@ -32,6 +32,7 @@ class oRouter {
         oRouter.#setEvent();
         const path = givenPath ?? (oRouter.originPrefix ? location.pathname.replace(oRouter.originPrefix, '') : location.pathname);
         const [searchParams, searchString] = oRouter.#searchQueryParser(givenPath ?? location.search);
+
 
         const routingParams = {
             url: path + searchString,
@@ -63,7 +64,9 @@ class oRouter {
             }
         })
         oRouter.changeState(path, routingParams);
-        return oRouter.routingTable[foundRoute.full](routingParams);
+        return oRouter.#optionalRendering(
+            oRouter.routingTable[foundRoute.full](routingParams)
+        );
     }
 
 
@@ -78,7 +81,7 @@ class oRouter {
             const delimiter1 = query.indexOf('?');
             const delimiter2 = query.indexOf('#');
             if(delimiter1 < 0)
-                return [parsedQuery, query];
+                return [parsedQuery, ''];
 
             query = delimiter2 > -1 ? query.slice(delimiter1, delimiter2) : query.substring(delimiter1);
         }
@@ -98,7 +101,9 @@ class oRouter {
             throw new Error('404 not found');
         }
         oRouter.changeState(path, routingParams);
-        return oRouter.routingTable['404'](routingParams);
+        return oRouter.#optionalRendering(
+            oRouter.routingTable['404'](routingParams)
+        );
     }
 
     static #setEvent(){
@@ -121,6 +126,13 @@ class oRouter {
             routesFiltered = routesFiltered.filter(route => (route.splitted[i] === splittedPath[i] || route.splitted[i].startsWith(':')));
         }
         return routesFiltered;
+    }
+
+    static #optionalRendering(routingFnResult){
+        if(routingFnResult instanceof HTMLElement){
+            document.body.innerHTML = '';
+            document.body.appendChild(routingFnResult);
+        }
     }
 }
 export default oRouter;
