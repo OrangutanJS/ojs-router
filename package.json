@@ -1,6 +1,6 @@
 {
     "name": "ojs-router",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "OrangutanJS - oRouter module.",
     "main": "oRouter.js",
     "scripts": {
