@@ -5,50 +5,34 @@
  * Example: http:/yourdomain.com/prefixExample -> originPrefix = '/prefixExample'
  */
 class oRouter {
-    static originPrefix = '';
-    static routingTable = {};
+    static originPrefix = '';//TODO: setter or type secure
+    static routingTable = {};//TODO: setter or type secure
     static defaultView = null;
 
     static redirect(path, params){
         oRouter.route(path, params);
     }
 
-    static changeState(path, params){
-        try {
-            if(params.url === window.location.pathname){
-                window.history.replaceState(JSON.parse(JSON.stringify(params)), document.title, path);
-            }else{
-                const state = { ...params, redirectedFrom: window.location.pathname };
-                window.history.pushState(JSON.parse(JSON.stringify(state)), document.title, path);
-            }
-            return true;
-        }catch (e) {
-            console.warn(e);
-            return false;
-        }
-    }
-
-	static route(givenPath, givenParams){
+    static route(givenPath, givenParams){
         oRouter.#setEvent();
-        const path = givenPath ?? (oRouter.originPrefix ? location.pathname.replace(oRouter.originPrefix, '') : location.pathname);
-        const [searchParams, searchString] = oRouter.#searchQueryParser(givenPath ?? location.search);
-
+        const url = oRouter.#createURL(givenPath);
 
         const routingParams = {
-            url: path + searchString,
-            searchParams
+            fullPath: url.href.replace(url.origin, ''), //NOTE: "fullPath"->?
+            url,
+            searchParams: oRouter.#decodeSearchQuery(url.search)
         };
 
         if(typeof givenParams === 'object'){
             Object.assign(routingParams, givenParams);
         }
 
-        const splittedPath = path.split('/').filter(part => part !== '');
+        const splittedPath = url.pathname.split('/').filter(part => part !== '');
         if(!splittedPath.length){
             if(!oRouter.defaultView || !(typeof oRouter.defaultView === 'function')){
-                throw new Error('Property defaultView not set.');
+                throw new Error('Property defaultView not set or is not a function.');
             }
-            oRouter.changeState(path, routingParams);
+            oRouter.#changeState(url, routingParams);
             return oRouter.defaultView(routingParams);
         }
 
@@ -63,28 +47,50 @@ class oRouter {
                 routingParams[paramName] = splittedPath[index];
             }
         })
-        oRouter.changeState(path, routingParams);
+        oRouter.#changeState(url, routingParams);
         return oRouter.#optionalRendering(
             oRouter.routingTable[foundRoute.full](routingParams)
         );
     }
 
+    static addSearchParams(params){
+        let paramsStr = '';
+        Object.entries(params).forEach(([key, value]) => {
+            paramsStr += `${key}=${value}`
+        })
+    }
 
 
     //Section: private methods
-    static #searchQueryParser(query){
+    static #changeState({ pathname, href}, params){
+        try {
+            if(pathname === window.location.pathname){
+                window.history.replaceState(JSON.parse(JSON.stringify(params)), document.title, href);
+            }else{
+                const state = { ...params, redirectedFrom: window.location.pathname };
+                window.history.pushState(JSON.parse(JSON.stringify(state)), document.title, href);
+            }
+            return true;
+        }catch (e) {
+            console.warn(e);
+            return false;
+        }
+    }
+
+    static #createURL(path){
+        if(typeof path === 'object' && path instanceof URL) return path;
+
+        return path ? (
+            new URL(window.location.origin + oRouter.originPrefix + path)
+        ) : (
+            new URL(window.location.href)
+        );
+    }
+
+    static #decodeSearchQuery(query){
         const parsedQuery = Object.create(null);
         if(!query.length)
-            return [parsedQuery, query];
-
-        if(!(query instanceof Location)){
-            const delimiter1 = query.indexOf('?');
-            const delimiter2 = query.indexOf('#');
-            if(delimiter1 < 0)
-                return [parsedQuery, ''];
-
-            query = delimiter2 > -1 ? query.slice(delimiter1, delimiter2) : query.substring(delimiter1);
-        }
+            return parsedQuery;
 
         const queryParamsSplitted = query.substring(1).split('&');
         queryParamsSplitted.forEach(param => {
@@ -92,15 +98,15 @@ class oRouter {
             parsedQuery[decodeURIComponent(key)] = decodeURIComponent(value);
         });
 
-        return [parsedQuery, query];
+        return parsedQuery;
     }
 
     static #notFound(routingParams){
-        const { path } = routingParams;
+        const { url } = routingParams;
         if(!oRouter.routingTable['404']){
             throw new Error('404 not found');
         }
-        oRouter.changeState(path, routingParams);
+        oRouter.#changeState(url, routingParams);
         return oRouter.#optionalRendering(
             oRouter.routingTable['404'](routingParams)
         );
