@@ -3,11 +3,27 @@
  * @static
  * @description Set only if your origin url has a static prefix.
  * Example: http:/yourdomain.com/prefixExample -> originPrefix = '/prefixExample'
+ * @property {function} defaultView
+ * @static
+ * @description default view for oRouter ('/' path).
  */
 class oRouter {
     static originPrefix = '';//TODO: setter or type secure
     static routingTable = {};//TODO: setter or type secure
-    static defaultView = null;
+    static #defaultView = () => null;
+    static set defaultView(value){
+        if(!value|| !(typeof value === 'function')){
+            throw new Error('Not valid defaultView parameter.');
+        }
+        oRouter.#defaultView = value;
+    }
+    static #routingParams = {};
+    static get routingParams(){
+        return oRouter.#routingParams;
+    }
+    static set routingParams(value){
+        return false;
+    }
 
     static redirect(path, params){
         oRouter.route(path, params);
@@ -17,57 +33,62 @@ class oRouter {
         oRouter.#setEvent();
         const url = oRouter.#createURL(givenPath);
 
-        const routingParams = {
+        oRouter.#routingParams = {
             fullPath: url.href.replace(url.origin, ''), //NOTE: "fullPath"->?
             url,
             searchParams: oRouter.#decodeSearchQuery(url.search)
         };
 
         if(typeof givenParams === 'object'){
-            Object.assign(routingParams, givenParams);
+            Object.assign(oRouter.#routingParams, givenParams);
         }
 
         const splittedPath = url.pathname.split('/').filter(part => part !== '');
         if(!splittedPath.length){
-            if(!oRouter.defaultView || !(typeof oRouter.defaultView === 'function')){
-                throw new Error('Property defaultView not set or is not a function.');
-            }
-            oRouter.#changeState(url, routingParams);
-            return oRouter.defaultView(routingParams);
+            oRouter.#changeState(url);
+            return oRouter.#defaultView(oRouter.#routingParams);
         }
 
         const routesFiltered = oRouter.#routesFilter(splittedPath);
         if(!routesFiltered.length)
-            return oRouter.#notFound(routingParams)
+            return oRouter.#notFound(oRouter.#routingParams)
 
         const foundRoute = routesFiltered[0];
         foundRoute.splitted.forEach((part, index) => {
             if(part.startsWith(':')){
                 const paramName = part.replace(':','');
-                routingParams[paramName] = splittedPath[index];
+                oRouter.#routingParams[paramName] = splittedPath[index];
             }
         })
-        oRouter.#changeState(url, routingParams);
+
+        oRouter.#changeState(url);
         return oRouter.#optionalRendering(
-            oRouter.routingTable[foundRoute.full](routingParams)
+            oRouter.routingTable[foundRoute.full](oRouter.#routingParams)
         );
     }
 
     static addSearchParams(params){
         let paramsStr = '';
         Object.entries(params).forEach(([key, value]) => {
-            paramsStr += `${key}=${value}`
-        })
+            paramsStr += `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+        });
+        const { url } = oRouter.#routingParams;
+
+        url.search = url.search.length ?
+            `${url.search}&${paramsStr}` :
+            `?${paramsStr}`;
+
+        oRouter.#changeState(url);
     }
 
 
     //Section: private methods
-    static #changeState({ pathname, href}, params){
+    static #changeState({ pathname, href }){
         try {
             if(pathname === window.location.pathname){
-                window.history.replaceState(JSON.parse(JSON.stringify(params)), document.title, href);
+                window.history.replaceState(JSON.parse(JSON.stringify(oRouter.#routingParams)), document.title, href);
             }else{
-                const state = { ...params, redirectedFrom: window.location.pathname };
+                const state = { ...oRouter.#routingParams, redirectedFrom: window.location.pathname };
                 window.history.pushState(JSON.parse(JSON.stringify(state)), document.title, href);
             }
             return true;
@@ -101,14 +122,14 @@ class oRouter {
         return parsedQuery;
     }
 
-    static #notFound(routingParams){
-        const { url } = routingParams;
+    static #notFound(){
+        const { url } = oRouter.#routingParams;
         if(!oRouter.routingTable['404']){
             throw new Error('404 not found');
         }
-        oRouter.#changeState(url, routingParams);
+        oRouter.#changeState(url);
         return oRouter.#optionalRendering(
-            oRouter.routingTable['404'](routingParams)
+            oRouter.routingTable['404'](oRouter.#routingParams)
         );
     }
 
