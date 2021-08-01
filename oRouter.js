@@ -7,6 +7,8 @@
  * @static
  * @description default view for oRouter ('/' path).
  */
+
+//TODO: wykrywanie zmian w urlu np. dodanie hasha poza api oRoutera0
 class oRouter {
     static originPrefix = '';//TODO: setter or type secure
     static routingTable = {};//TODO: setter or type secure
@@ -36,7 +38,8 @@ class oRouter {
         oRouter.#routingParams = {
             fullPath: url.href.replace(url.origin, ''), //NOTE: "fullPath"->?
             url,
-            searchParams: oRouter.#decodeSearchQuery(url.search)
+            searchParams: oRouter.#decodeSearchQuery(url.search),
+            hash: url.hash
         };
 
         if(typeof givenParams === 'object'){
@@ -67,20 +70,79 @@ class oRouter {
         );
     }
 
-    static addSearchParams(params){
-        let paramsStr = '';
-        Object.entries(params).forEach(([key, value]) => {
-            paramsStr += `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+    static setSearchParam(key, value){
+        if(!key || typeof key !== 'string' || typeof value === 'object') return false;
+        return oRouter.setSearchParams({
+            [key]: String(value)
         });
-        const { url } = oRouter.#routingParams;
-
-        url.search = url.search.length ?
-            `${url.search}&${paramsStr}` :
-            `?${paramsStr}`;
-
-        oRouter.#changeState(url);
     }
 
+    static unsetSearchParam(key){
+        delete oRouter.#routingParams.searchParams[key];
+
+        const { url } = oRouter.#routingParams;
+        let paramsStr = oRouter.#searchParamsToString();
+
+        url.search = `?${paramsStr}`;
+        return oRouter.#changeState(url);
+    }
+
+    static setSearchParams(params){
+        if(typeof params !== 'object') return false;
+        if(!Object.keys(params).length) return true;
+
+        const { url } = oRouter.#routingParams;
+        let paramsStr = oRouter.#searchParamsToString(params);
+
+        url.search = '?' + paramsStr;
+        return oRouter.#changeState(url);
+    }
+
+    static setHash(hash){
+        if(!hash || typeof hash === 'object') return false;
+
+        hash = String(hash);
+        const { url } = oRouter.#routingParams;
+
+        if(hash.startsWith('#')){
+            hash = hash.substring(1);
+        }
+        const alredyInRegExp = new RegExp(`#?${hash}(#|$)`);
+        if(alredyInRegExp.test(url.hash)) return true;
+
+        url.hash += '#' + hash;
+
+        return oRouter.#changeState(url);
+    }
+
+    static unsetHash(hash){
+        if(!hash || typeof hash === 'object') return false;
+
+        hash = String(hash);
+        const { url } = oRouter.#routingParams;
+
+        if(hash.startsWith('#')){
+            hash = hash.substring(1);
+        }
+        const alredyInRegExp = new RegExp(`#?${hash}(#|$)`, 'i');
+        url.hash = url.hash.replace(alredyInRegExp, '');
+
+        return oRouter.#changeState(url);
+    }
+
+    static #searchParamsToString(params){
+        if(params){
+            Object.assign(
+                oRouter.#routingParams.searchParams,
+                params
+            );
+        }
+
+        const paramsMapped = Object.entries(oRouter.#routingParams.searchParams)
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
+
+        return paramsMapped.join('&');
+    }
 
     //Section: private methods
     static #changeState({ pathname, href }){
