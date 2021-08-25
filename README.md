@@ -73,34 +73,34 @@ function callbackFunction(routingParameters){ //routingParameters.exampleParamet
 ```
 
 
-## Search parameters/ GET parameters API
+## Search parameters / GET parameters API
 In oRouter there are 3 methods to manage GET parameters: <br/>
-All search parameters also available in *oRouter.routingParams.searchParams*
-- .setSearchParam( **key** :string, **value** :string ):
+All search parameters also available in *oRouter.routingParameters.searchParameters*
+- .setSearchParameter( **key** :string, **value** :string ):
   <br/>&#9;- add/replace(when parameter with the key already is in search parameters) search parameter:
     ```js
-    oRouter.setSearchParams(key, value) // example.com?key=value
+    oRouter.setSearchParameters(key, value) // example.com?key=value
     ```
   
-- .setSearchParams( **params** :object ): 
+- .setSearchParameters( **parameters** :object ): 
   <br/>&#9;- add/replace(when parameter with the key already is in search parameters) multiple search parameters:
     ```js
-    oRouter.setSearchParams({
+    oRouter.setSearchParameters({
         key1: 'value1',
         key2: 'value2'    
     }) 
   //example.com?key1=value1&key1=value2
     ```
-- .unsetSearchParam( **key** :string)
+- .unsetSearchParameter( **key** :string)
   <br/>&#9;- unset search parameter with given key:
   ```js
   //before: example.com?key=value&key2=value2
-  oRouter.unsetSearchParams('key');
+  oRouter.unsetSearchParameters('key');
   //after example.com?key2=value 
     ```
 ## Hash API
 In oRouter there are 2 methods to manage hashes in URL: <br/>
-All hashes also available in *oRouter.routingParams.hash*
+All hashes also available in *oRouter.routingParameters.hash*
 - .setHash( **hash** :string )
   <br/>&#9;- just add hash to URL :)
     ```js
@@ -112,4 +112,10 @@ All hashes also available in *oRouter.routingParams.hash*
     //before: example.com#hash1
     oRouter.unsetHash('hash1');
   //after: example.com
+    ```
+- .isSetHash( **hash** :string ) :boolean
+  <br/>&#9;- check if hash is already added
+    ```js
+    //for: example.com#hash1
+    oRouter.isSetHash('hash1') // true
     ```

@@ -1,8 +1,8 @@
 {
     "name": "ojs-router",
-    "version": "1.3.0",
+    "version": "2.0.0",
     "description": "OrangutanJS - oRouter module.",
-    "main": "oRouter.js",
+    "main": "src/oRouter.js",
     "scripts": {
         "test": "jest",
         "test:watchAll": "jest --watchAll"
