@@ -137,6 +137,12 @@ class oRouter {
     return oRouter.#changeState(url);
   }
 
+  static isSetHash(hash) {
+    const alredyInRegExp = new RegExp(`#?${hash}(#|$)`);
+    const {url} = oRouter.#routingParams;
+    return alredyInRegExp.test(url.hash);
+  }
+
   static #searchParamsToString(params) {
     if (params) {
       Object.assign(
