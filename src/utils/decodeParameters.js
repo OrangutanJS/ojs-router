@@ -7,7 +7,7 @@ const FORBIDDEN_PARAMETERS = [
 
 export default function decodeParameters(route, splittedPath) {
   const decodedParameters = {}
-  foundRoute.splitted.forEach((part, index) => {
+  route.splitted.forEach((part, index) => {
     if (part.startsWith(':')) {
       const parameterName = part.replace(':', '');
       if(FORBIDDEN_PARAMETERS.includes(parameterName)) return;

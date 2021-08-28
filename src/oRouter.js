@@ -36,7 +36,7 @@ export default class oRouter {
   }
 
   static set routingParameters(value) {
-    return false;
+    return value;
   }
 
   static #defaultView = () => null;
@@ -82,9 +82,10 @@ export default class oRouter {
       return false;
     }
 
+    const foundRoute = routesFiltered[0];
     Object.assign(
       oRouter.#routingParameters.parameters,
-      decodeParameters(routesFiltered[0], splittedPath)
+      decodeParameters(foundRoute, splittedPath)
     );
 
     oRouter.#changeState(url);
@@ -174,10 +175,18 @@ export default class oRouter {
   static #changeState({ pathname, href }) {
     try {
       if (pathname === window.location.pathname) {
-        window.history.replaceState(JSON.parse(JSON.stringify(oRouter.#routingParameters)), document.title, href);
+        window.history.replaceState(
+          JSON.parse(JSON.stringify(oRouter.#routingParameters)),
+          document.title,
+          href
+        );
       } else {
         const state = { ...oRouter.#routingParameters, redirectedFrom: window.location.pathname };
-        window.history.pushState(JSON.parse(JSON.stringify(state)), document.title, href);
+        window.history.pushState(
+          JSON.parse(JSON.stringify(state)),
+          document.title,
+          href
+        );
       }
       return true;
     } catch (e) {
