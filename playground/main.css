@@ -7,3 +7,7 @@
 .link-href:hover {
     text-decoration: underline;
 }
+
+.bold {
+    font-weight: bold;
+}

@@ -9,7 +9,6 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'main.js',
-    publicPath: '/dist/',
   },
   devServer: {
     static: {
@@ -18,7 +17,7 @@ module.exports = {
     compress: true,
     port: 9000,
     historyApiFallback: {
-      index: 'index.html'
+      index: 'http://localhost:9000/index.html'
     }
   },
   module: {
