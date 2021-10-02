@@ -5,7 +5,7 @@ import decodeSearchQuery from "./utils/decodeSearchQuery";
 import createUrlObject from "./utils/createUrlObject";
 import splitAndFilterPath from "./utils/splitAndFilterPath";
 import decodeParameters from "./utils/decodeParameters";
-import searchParametersToString from "./utils/searchParametersToString";
+import encodeSearchQuery from "./utils/encodeSearchQuery";
 
 /**
  * @property {string} originPrefix
@@ -49,6 +49,7 @@ export default class oRouter {
     setOnPopStateEvent();
     var renderFunctionResult;
     const url = createUrlObject(givenPath, oRouter.originPrefix);
+    debugger;
 
     oRouter.#routingParameters = {
       fullPath: url.href.replace(url.origin, ''), //NOTE: "fullPath"->?
@@ -58,11 +59,16 @@ export default class oRouter {
       parameters: {}
     };
 
+    debugger;
+
     if (typeof givenParameters === 'object') {
       Object.assign(oRouter.#routingParameters, givenParameters);
     }
 
+    debugger;
+
     const splittedPath = splitAndFilterPath(url.pathname);
+    debugger;
     if (!splittedPath.length) {
       oRouter.#changeState(url);
       renderFunctionResult = oRouter.#defaultView(oRouter.#routingParameters);
@@ -70,6 +76,7 @@ export default class oRouter {
       return true;
     }
 
+    debugger;
     const routesFiltered = routesFilter(splittedPath, oRouter.routingTable);
     if (!routesFiltered.length) {
       const { url } = oRouter.#routingParameters;
@@ -116,9 +123,8 @@ export default class oRouter {
     if (!Object.keys(parameters).length) return true;
 
     const { url } = oRouter.#routingParameters;
-    let parametersStr = oRouter.#searchParametersToString(parameters);
 
-    url.search = '?' + parametersStr;
+    url.search = oRouter.#searchParametersToString(parameters);
     return oRouter.#changeState(url);
   }
 
@@ -168,7 +174,7 @@ export default class oRouter {
       );
     }
 
-    return searchParametersToString(oRouter.#routingParameters.searchParameters);
+    return encodeSearchQuery(oRouter.#routingParameters.searchParameters);
   }
 
   //Section: private methods
