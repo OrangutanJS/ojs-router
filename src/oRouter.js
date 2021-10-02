@@ -49,7 +49,6 @@ export default class oRouter {
     setOnPopStateEvent();
     var renderFunctionResult;
     const url = createUrlObject(givenPath, oRouter.originPrefix);
-    debugger;
 
     oRouter.#routingParameters = {
       fullPath: url.href.replace(url.origin, ''), //NOTE: "fullPath"->?
@@ -59,16 +58,11 @@ export default class oRouter {
       parameters: {}
     };
 
-    debugger;
-
     if (typeof givenParameters === 'object') {
       Object.assign(oRouter.#routingParameters, givenParameters);
     }
 
-    debugger;
-
     const splittedPath = splitAndFilterPath(url.pathname);
-    debugger;
     if (!splittedPath.length) {
       oRouter.#changeState(url);
       renderFunctionResult = oRouter.#defaultView(oRouter.#routingParameters);
@@ -76,7 +70,6 @@ export default class oRouter {
       return true;
     }
 
-    debugger;
     const routesFiltered = routesFilter(splittedPath, oRouter.routingTable);
     if (!routesFiltered.length) {
       const { url } = oRouter.#routingParameters;
