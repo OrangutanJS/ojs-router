@@ -5,7 +5,7 @@ import decodeSearchQuery from "./utils/decodeSearchQuery";
 import createUrlObject from "./utils/createUrlObject";
 import splitAndFilterPath from "./utils/splitAndFilterPath";
 import decodeParameters from "./utils/decodeParameters";
-import searchParametersToString from "./utils/searchParametersToString";
+import encodeSearchQuery from "./utils/encodeSearchQuery";
 
 /**
  * @property {string} originPrefix
@@ -51,7 +51,7 @@ export default class oRouter {
     const url = createUrlObject(givenPath, oRouter.originPrefix);
 
     oRouter.#routingParameters = {
-      fullPath: url.href.replace(url.origin, ''), //NOTE: "fullPath"->?
+      fullPath: url.href.replace(url.origin, ''),
       url,
       searchParameters: decodeSearchQuery(url.search),
       hash: url.hash,
@@ -62,7 +62,7 @@ export default class oRouter {
       Object.assign(oRouter.#routingParameters, givenParameters);
     }
 
-    const splittedPath = splitAndFilterPath(url.pathname);
+    const splittedPath = splitAndFilterPath(url.pathname, oRouter.originPrefix);
     if (!splittedPath.length) {
       oRouter.#changeState(url);
       renderFunctionResult = oRouter.#defaultView(oRouter.#routingParameters);
@@ -102,6 +102,8 @@ export default class oRouter {
   }
 
   static unsetSearchParameter(key) {
+    if (!oRouter.#routingParameters.searchParameters[key]) return false;
+
     delete oRouter.#routingParameters.searchParameters[key];
 
     const { url } = oRouter.#routingParameters;
@@ -116,9 +118,16 @@ export default class oRouter {
     if (!Object.keys(parameters).length) return true;
 
     const { url } = oRouter.#routingParameters;
-    let parametersStr = oRouter.#searchParametersToString(parameters);
 
-    url.search = '?' + parametersStr;
+    url.search = oRouter.#searchParametersToString(parameters);
+    return oRouter.#changeState(url);
+  }
+
+  static unsetSearchParametersAll() {
+    const { url } = oRouter.#routingParameters;
+    const searchParameters = decodeSearchQuery(url.search);
+    Object.keys(searchParameters).forEach(searchParameter => oRouter.unsetSearchParameter(searchParameter));
+
     return oRouter.#changeState(url);
   }
 
@@ -131,8 +140,8 @@ export default class oRouter {
     if (hash.startsWith('#')) {
       hash = hash.substring(1);
     }
-    const alredyInRegExp = new RegExp(`#?${hash}(#|$)`, 'i');
-    if (alredyInRegExp.test(url.hash)) return true;
+    const alreadyInRegExp = new RegExp(`#?${hash}(#|$)`, 'i');
+    if (alreadyInRegExp.test(url.hash)) return true;
 
     url.hash += '#' + hash;
 
@@ -148,16 +157,26 @@ export default class oRouter {
     if (hash.startsWith('#')) {
       hash = hash.substring(1);
     }
-    const alredyInRegExp = new RegExp(`#?${hash}(#|$)`, 'i');
-    url.hash = url.hash.replace(alredyInRegExp, '');
+    const alreadyInRegExp = new RegExp(`#?${hash}(#|$)`, 'i');
+    url.hash = url.hash.replace(alreadyInRegExp, '');
 
     return oRouter.#changeState(url);
   }
 
-  static isSetHash(hash) {
-    const alredyInRegExp = new RegExp(`#?${hash}(#|$)`);
+  static unsetHashAll() {
     const { url } = oRouter.#routingParameters;
-    return alredyInRegExp.test(url.hash);
+    const hashes = url.hash.split('#').filter(hash => hash !== '');
+    hashes.forEach(hash => oRouter.unsetHash(hash));
+  }
+
+  static isSetHash(hash) {
+    const alreadyInRegExp = new RegExp(`#?${hash}(#|$)`);
+    const { url } = oRouter.#routingParameters;
+    return alreadyInRegExp.test(url.hash);
+  }
+
+  static back() {
+    window.history.back();
   }
 
   static #searchParametersToString(searchParameters) {
@@ -168,24 +187,26 @@ export default class oRouter {
       );
     }
 
-    return searchParametersToString(oRouter.#routingParameters.searchParameters);
+    return encodeSearchQuery(oRouter.#routingParameters.searchParameters);
   }
 
   //Section: private methods
-  static #changeState({ pathname, href }) {
+  static #changeState(url) {
+    const { pathname } = url;
+    oRouter.#routingParameters.fullPath = url.href.replace(url.origin, '');
     try {
       if (pathname === window.location.pathname) {
         window.history.replaceState(
           JSON.parse(JSON.stringify(oRouter.#routingParameters)),
           document.title,
-          href
+          url
         );
       } else {
         const state = { ...oRouter.#routingParameters, redirectedFrom: window.location.pathname };
         window.history.pushState(
           JSON.parse(JSON.stringify(state)),
           document.title,
-          href
+          url
         );
       }
       return true;
