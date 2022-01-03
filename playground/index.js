@@ -15,6 +15,7 @@ oRouter.route();
 
 function defaultView() {
     const playgroundView = new Playground();
+    return playgroundView;
     document.body.innerHTML = '';
     document.body.appendChild(
         playgroundView.init()
