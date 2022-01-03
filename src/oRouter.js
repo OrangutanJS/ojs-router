@@ -46,7 +46,7 @@ export default class oRouter {
   }
 
   static route(givenPath, givenParameters) {
-    setOnPopStateEvent();
+    setOnPopStateEvent(oRouter.route);
     var renderFunctionResult;
     const url = createUrlObject(givenPath, oRouter.originPrefix);
 

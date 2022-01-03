@@ -1,10 +1,8 @@
-import oRouter from "../oRouter";
-
-export default function setOnPopStateEvent() {
+export default function setOnPopStateEvent(callback) {
   if (!window.onpopstate) {
     window.onpopstate = function (e) {
       e.preventDefault();
-      oRouter.route();
+      callback();
     }
   }
 }
