@@ -1,18 +1,15 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 function ownKeys(object, enumerableOnly) {
   var keys = Object.keys(object);
 
   if (Object.getOwnPropertySymbols) {
     var symbols = Object.getOwnPropertySymbols(object);
-
-    if (enumerableOnly) {
-      symbols = symbols.filter(function (sym) {
-        return Object.getOwnPropertyDescriptor(object, sym).enumerable;
-      });
-    }
-
-    keys.push.apply(keys, symbols);
+    enumerableOnly && (symbols = symbols.filter(function (sym) {
+      return Object.getOwnPropertyDescriptor(object, sym).enumerable;
+    })), keys.push.apply(keys, symbols);
   }
 
   return keys;
@@ -20,19 +17,12 @@ function ownKeys(object, enumerableOnly) {
 
 function _objectSpread2(target) {
   for (var i = 1; i < arguments.length; i++) {
-    var source = arguments[i] != null ? arguments[i] : {};
-
-    if (i % 2) {
-      ownKeys(Object(source), true).forEach(function (key) {
-        _defineProperty(target, key, source[key]);
-      });
-    } else if (Object.getOwnPropertyDescriptors) {
-      Object.defineProperties(target, Object.getOwnPropertyDescriptors(source));
-    } else {
-      ownKeys(Object(source)).forEach(function (key) {
-        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
-      });
-    }
+    var source = null != arguments[i] ? arguments[i] : {};
+    i % 2 ? ownKeys(Object(source), !0).forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) {
+      Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+    });
   }
 
   return target;
@@ -41,17 +31,11 @@ function _objectSpread2(target) {
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  }, _typeof(obj);
 }
 
 function _classCallCheck(instance, Constructor) {
@@ -73,6 +57,9 @@ function _defineProperties(target, props) {
 function _createClass(Constructor, protoProps, staticProps) {
   if (protoProps) _defineProperties(Constructor.prototype, protoProps);
   if (staticProps) _defineProperties(Constructor, staticProps);
+  Object.defineProperty(Constructor, "prototype", {
+    writable: false
+  });
   return Constructor;
 }
 
@@ -208,23 +195,18 @@ function _classCheckPrivateStaticFieldDescriptor(descriptor, action) {
 
 function renderIfHtmlElementGiven(element) {
   var renderIn = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document.body;
-
   if (!element) {
     return;
   }
-
   var render = function render(element) {
     renderIn.innerHTML = '';
     renderIn.appendChild(element);
   };
-
   if (element instanceof HTMLElement) {
     render(element);
   }
-
   if (element.init && typeof element.init === 'function') {
     var result = element.init();
-
     if (result instanceof HTMLElement) {
       render(result);
     }
@@ -243,17 +225,14 @@ function routesFilter(splittedPath, routingTable) {
   var routesFiltered = routes.filter(function (route) {
     return route.splitted.length === splittedPath.length;
   });
-
   var _loop = function _loop(i) {
     routesFiltered = routesFiltered.filter(function (route) {
       return route.splitted[i] === splittedPath[i] || route.splitted[i].startsWith(':');
     });
   };
-
   for (var i = 0; i < splittedPath.length; i++) {
     _loop(i);
   }
-
   return routesFiltered;
 }
 
@@ -275,7 +254,6 @@ function decodeSearchQuery(query) {
         _parameter$split2 = _slicedToArray(_parameter$split, 2),
         key = _parameter$split2[0],
         value = _parameter$split2[1];
-
     parsedQuery[decodeURIComponent(key)] = decodeURIComponent(value);
   });
   return parsedQuery;
@@ -320,47 +298,28 @@ function encodeSearchQuery(searchParameters) {
   if (!searchQueryString.substring(1).length) return '';
   return searchQueryString;
 }
-
 function searchParametersFilter(_ref) {
   var _ref2 = _slicedToArray(_ref, 2),
       value = _ref2[1];
-
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
 }
-
 function searchParametersMapper(_ref3) {
   var _ref4 = _slicedToArray(_ref3, 2),
       key = _ref4[0],
       value = _ref4[1];
-
   return "".concat(encodeURIComponent(key), "=").concat(encodeURIComponent(value));
 }
 
-/**
- * @property {string} originPrefix
- * @static
- * @description Set only if your origin url has a static prefix.
- * Example: http:/yourdomain.com/prefixExample -> originPrefix = '/prefixExample'
- * @property {function} defaultView
- * @static
- * @description default view for oRouter ('/' path).
- */
-//TODO: wykrywanie zmian w urlu np. dodanie hasha poza api oRoutera
-
-var oRouter = /*#__PURE__*/function () {
+var oRouter = function () {
   function oRouter() {
     _classCallCheck(this, oRouter);
   }
-
   _createClass(oRouter, null, [{
     key: "defaultView",
-    set: //TODO: setter or type secure
-    //TODO: setter or type secure
-    function set(value) {
+    set: function set(value) {
       if (!value || !(typeof value === 'function')) {
-        throw new Error('Not valid defaultView parametereter.');
+        return false;
       }
-
       _classStaticPrivateFieldSpecSet(oRouter, oRouter, _defaultView, value);
     }
   }, {
@@ -382,7 +341,6 @@ var oRouter = /*#__PURE__*/function () {
       setOnPopStateEvent(oRouter.route);
       var renderFunctionResult;
       var url = createUrlObject(givenPath, oRouter.originPrefix);
-
       _classStaticPrivateFieldSpecSet(oRouter, oRouter, _routingParameters, {
         fullPath: url.href.replace(url.origin, ''),
         url: url,
@@ -390,43 +348,31 @@ var oRouter = /*#__PURE__*/function () {
         hash: url.hash,
         parameters: {}
       });
-
       if (_typeof(givenParameters) === 'object') {
         Object.assign(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters), givenParameters);
       }
-
       var splittedPath = splitAndFilterPath(url.pathname, oRouter.originPrefix);
-
       if (!splittedPath.length) {
         _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
-
         renderFunctionResult = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _defaultView).call(oRouter, _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters));
         renderIfHtmlElementGiven(renderFunctionResult);
         return true;
       }
-
       var routesFiltered = routesFilter(splittedPath, oRouter.routingTable);
-
       if (!routesFiltered.length) {
         var _classStaticPrivateFi = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
             _url = _classStaticPrivateFi.url;
-
         if (!oRouter.routingTable['404-notFound']) {
           return false;
         }
-
         _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, _url);
-
         renderFunctionResult = oRouter.routingTable['404-notFound'](_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters));
         renderIfHtmlElementGiven(renderFunctionResult);
         return false;
       }
-
       var foundRoute = routesFiltered[0];
       Object.assign(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).parameters, decodeParameters(foundRoute, splittedPath));
-
       _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
-
       renderFunctionResult = oRouter.routingTable[foundRoute.full](_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters));
       renderIfHtmlElementGiven(renderFunctionResult);
       return true;
@@ -442,12 +388,9 @@ var oRouter = /*#__PURE__*/function () {
     value: function unsetSearchParameter(key) {
       if (!_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).searchParameters[key]) return false;
       delete _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).searchParameters[key];
-
       var _classStaticPrivateFi2 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi2.url;
-
       var parametersStr = _classStaticPrivateMethodGet(oRouter, oRouter, _searchParametersToString).call(oRouter);
-
       url.search = "?".concat(parametersStr);
       return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
     }
@@ -456,10 +399,8 @@ var oRouter = /*#__PURE__*/function () {
     value: function setSearchParameters(parameters) {
       if (_typeof(parameters) !== 'object') return false;
       if (!Object.keys(parameters).length) return true;
-
       var _classStaticPrivateFi3 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi3.url;
-
       url.search = _classStaticPrivateMethodGet(oRouter, oRouter, _searchParametersToString).call(oRouter, parameters);
       return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
     }
@@ -468,7 +409,6 @@ var oRouter = /*#__PURE__*/function () {
     value: function unsetSearchParametersAll() {
       var _classStaticPrivateFi4 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi4.url;
-
       var searchParameters = decodeSearchQuery(url.search);
       Object.keys(searchParameters).forEach(function (searchParameter) {
         return oRouter.unsetSearchParameter(searchParameter);
@@ -480,14 +420,11 @@ var oRouter = /*#__PURE__*/function () {
     value: function setHash(hash) {
       if (!hash || _typeof(hash) === 'object') return false;
       hash = String(hash);
-
       var _classStaticPrivateFi5 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi5.url;
-
       if (hash.startsWith('#')) {
         hash = hash.substring(1);
       }
-
       var alreadyInRegExp = new RegExp("#?".concat(hash, "(#|$)"), 'i');
       if (alreadyInRegExp.test(url.hash)) return true;
       url.hash += '#' + hash;
@@ -498,14 +435,11 @@ var oRouter = /*#__PURE__*/function () {
     value: function unsetHash(hash) {
       if (!hash || _typeof(hash) === 'object') return false;
       hash = String(hash);
-
       var _classStaticPrivateFi6 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi6.url;
-
       if (hash.startsWith('#')) {
         hash = hash.substring(1);
       }
-
       var alreadyInRegExp = new RegExp("#?".concat(hash, "(#|$)"), 'i');
       url.hash = url.hash.replace(alreadyInRegExp, '');
       return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
@@ -515,7 +449,6 @@ var oRouter = /*#__PURE__*/function () {
     value: function unsetHashAll() {
       var _classStaticPrivateFi7 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi7.url;
-
       var hashes = url.hash.split('#').filter(function (hash) {
         return hash !== '';
       });
@@ -527,10 +460,8 @@ var oRouter = /*#__PURE__*/function () {
     key: "isSetHash",
     value: function isSetHash(hash) {
       var alreadyInRegExp = new RegExp("#?".concat(hash, "(#|$)"));
-
       var _classStaticPrivateFi8 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi8.url;
-
       return alreadyInRegExp.test(url.hash);
     }
   }, {
@@ -539,22 +470,17 @@ var oRouter = /*#__PURE__*/function () {
       window.history.back();
     }
   }]);
-
   return oRouter;
 }();
-
 function _searchParametersToString(searchParameters) {
   if (searchParameters) {
     Object.assign(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).searchParameters, searchParameters);
   }
-
   return encodeSearchQuery(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).searchParameters);
 }
-
 function _changeState(url) {
   var pathname = url.pathname;
   _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).fullPath = url.href.replace(url.origin, '');
-
   try {
     if (pathname === window.location.pathname) {
       window.history.replaceState(JSON.parse(JSON.stringify(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters))), document.title, url);
@@ -562,21 +488,16 @@ function _changeState(url) {
       var state = _objectSpread2(_objectSpread2({}, _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters)), {}, {
         redirectedFrom: window.location.pathname
       });
-
       window.history.pushState(JSON.parse(JSON.stringify(state)), document.title, url);
     }
-
     return true;
   } catch (e) {
     console.warn(e);
     return false;
   }
 }
-
 _defineProperty(oRouter, "originPrefix", '');
-
 _defineProperty(oRouter, "routingTable", {});
-
 var _routingParameters = {
   writable: true,
   value: {}
@@ -588,4 +509,266 @@ var _defaultView = {
   }
 };
 
-module.exports = oRouter;
+function oFragment(...children) {
+    if (!(this instanceof oFragment)) {
+        return new oFragment(...children);
+    }
+    this.children = children.length === 1 && Array.isArray(children[0])
+        ? children[0]
+        : children;
+    this._isofragment = true;
+}
+oFragment.prototype.add = function (...children) {
+    if (!children.length)
+        return this;
+    const childrenArray = children.length === 1 && Array.isArray(children[0])
+        ? children[0]
+        : children;
+    this.children = this.children.concat(childrenArray);
+    return this;
+};
+oFragment.prototype.init = function () {
+    return this.children;
+};
+function addMethodService(children) {
+    if (!this._isoelement) {
+        console.error('Wrong usage of addService function');
+        return;
+    }
+    if (
+        typeof children === 'boolean' ||
+        children === null ||
+        typeof children === 'undefined'
+    ) return;
+    if (Array.isArray(children)) {
+        children.forEach(child => addMethodService.call(this, child));
+        return;
+    }
+    if (children._isofragment) {
+        children.init().forEach(child => addMethodService.call(this, child));
+        return;
+    }
+    if (children instanceof HTMLElement) {
+        this.element.appendChild(children);
+        return;
+    }
+    if (children._isoelement || children.__proto__.init) {
+        const oInstanceHTML = children.init();
+        if (oInstanceHTML instanceof HTMLElement) {
+            this.element.appendChild(oInstanceHTML);
+        }
+    }
+    return;
+}
+function inputFunction(instance, name, value) {
+    if (instance.element.nodeName !== 'INPUT' || value === undefined) {
+        return instance;
+    }
+    instance.element[name] = value;
+    return instance;
+}
+function o(element) {
+    if (!(this instanceof o)) {
+        return new o(element);
+    }
+    if (element === 'fragment') {
+        this.element = oFragment();
+        return;
+    }
+    if (element instanceof HTMLElement) {
+        this.element = element;
+        return;
+    }
+    this.element = document.createElement(element);
+    this._isoelement = true;
+}
+o.prototype.event = function (obj) {
+    if (obj instanceof Array) {
+        obj.forEach(event => this.element.addEventListener(
+            event.name,
+            event.fn,
+        ));
+    } else if (obj instanceof Object) {
+        this.element.addEventListener(
+            obj.name,
+            obj.fn,
+        );
+    }
+    return this;
+};
+o.prototype.click = function (cb) {
+    this.element.addEventListener('click', cb);
+    return this;
+};
+o.prototype.setAttribute = function (name, val) {
+    this.element.setAttribute(name, val);
+    return this;
+};
+o.prototype.setAttributes = function (attributes) {
+    return this.attr(attributes);
+};
+o.prototype.attr = function (attrs) {
+    if (Array.isArray(attrs)) {
+        attrs.forEach(attr => this.element.setAttribute(attr.name, attr.val));
+    } else {
+        Object.entries(attrs).forEach(([name, val]) => this.element.setAttribute(name, val));
+    }
+    return this;
+};
+o.prototype.class = function (classNames) {
+    if (Array.isArray(classNames)) {
+        classNames.forEach(className => this.element.classList.add(className));
+    } else if (typeof classNames === 'string') {
+        this.element.className = classNames;
+    }
+    return this;
+};
+o.prototype.classList = function (classList) {
+    return this.class(classList)
+};
+o.prototype.className = function (className) {
+    return this.class(className)
+};
+o.prototype.id = function (id) {
+    this.element.setAttribute('id', id);
+    return this;
+};
+o.prototype.add = function (...children) {
+    children.forEach(child => addMethodService.call(this, child));
+    return this;
+};
+o.prototype.for = function (id) {
+    if (this.element.nodeName === 'LABEL') {
+        this.element.setAttribute('for', id);
+    }
+    return this;
+};
+o.prototype.get = function (attribute) {
+    return this.element[attribute] || undefined;
+};
+o.prototype.getText = function () {
+    return this.element.innerText;
+};
+o.prototype.getId = function () {
+    return this.element.id || undefined;
+};
+o.prototype.parent = function () {
+    const { parentNode } = this.element;
+    return parentNode ? o(parentNode) : null;
+};
+o.prototype.text = function (text) {
+    if (!['undefined', 'object', 'function'].includes(typeof text)) {
+        this.element.textContent = text;
+    }
+    return this;
+};
+o.prototype.html = function (html) {
+    if (typeof (html) == 'object') {
+        try {
+            this.element.appendChild(html);
+        } catch (err) {
+            console.warn('Object is not HTMLElement: parametr 1 is type ' + typeof (html) + '\n' + err);
+        }
+    } else if (typeof (html) !== undefined && html !== undefined) {
+        this.element.innerHTML = html;
+    }
+    return this;
+};
+o.prototype.init = function () {
+    return (this.element instanceof oFragment) ? this.element.init() : this.element;
+};
+o.prototype.ref = function (oRefInstance) {
+    if (!oRefInstance || !oRefInstance._isoref) {
+        return this;
+    }
+    oRefInstance.target = this.element;
+    oRefInstance.o = this;
+    return this;
+};
+o.prototype.style = function (styles) {
+    this.element.setAttribute('style', styles);
+    return this;
+};
+o.prototype.placeholder = function (placeholder) { return inputFunction(this, 'placeholder', placeholder) };
+o.prototype.value = function (value) { return inputFunction(this, 'value', value) };
+o.prototype.type = function (type) { return inputFunction(this, 'type', type) };
+o.prototype.name = function (name) { return inputFunction(this, 'name', name) };
+o.prototype.min = function (min) { return inputFunction(this, 'min', min) };
+o.prototype.max = function (max) { return inputFunction(this, 'max', max) };
+o.prototype.disabled = function (disabled) { return inputFunction(this, 'disabled', disabled) };
+o.prototype.required = function (required) { return inputFunction(this, 'required', required) };
+
+function oLink(route) {
+  if (!(this instanceof oLink)) return new oLink(route);
+  this.element = o('a').click(function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (route) {
+      oRouter.redirect(route);
+    }
+  });
+}
+oLink.prototype.add = function () {
+  var _this$element;
+  (_this$element = this.element).add.apply(_this$element, arguments);
+  return this;
+};
+oLink.prototype.setAttribute = function (name, val) {
+  this.element.setAttribute(name, val);
+  return this;
+};
+oLink.prototype.setAttributes = function (attributes) {
+  this.element.attr(attributes);
+  return this;
+};
+oLink.prototype.attr = o.prototype.setAttributes;
+oLink.prototype["class"] = function (classNames) {
+  this.element["class"](classNames);
+  return this;
+};
+oLink.prototype.classList = function (classList) {
+  return this["class"](classList);
+};
+oLink.prototype.className = function (className) {
+  return this["class"](className);
+};
+oLink.prototype.id = function (id) {
+  this.element.id(id);
+  return this;
+};
+oLink.prototype.get = function (attribute) {
+  return this.element.get(attribute);
+};
+oLink.prototype.getText = function () {
+  return this.element.getText();
+};
+oLink.prototype.getId = function () {
+  return this.element.getId();
+};
+oLink.prototype.parent = function () {
+  return this.element.parent();
+};
+oLink.prototype.text = function (text) {
+  this.element.text(text);
+  return this;
+};
+oLink.prototype.to = function (route) {
+  this.element.click(function () {
+    oRouter.redirect(route);
+  });
+  return this;
+};
+oLink.prototype.init = function () {
+  return this.element.init();
+};
+oLink.prototype.ref = function (oRefInstance) {
+  this.element.ref(oRefInstance);
+  return this;
+};
+oLink.prototype.style = function (styles) {
+  this.element.style(styles);
+  return this;
+};
+
+exports["default"] = oRouter;
+exports.oLink = oLink;

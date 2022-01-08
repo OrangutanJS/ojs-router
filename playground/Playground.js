@@ -1,6 +1,8 @@
 import o from 'ojs-core';
 import './main.css';
-import oRouter from '../src/oRouter';
+// import oRouter, { oLink } from '../npm/oRouter.development';
+import { oRouter } from '../src/methods/oRouter';
+import { oLink } from '../src/methods/oLink';
 
 class Playground {
 
@@ -9,10 +11,11 @@ class Playground {
             o('h2').text('Routing').init(),
             o('ul').add([
                 o('li').add([
-                    o('a').class('link-href').text('route to View 1').click(() => redirectToView1()).init(),
+                    oLink().to('/view1').class('link-href').text('route to View 1')
+                    // o('a').class('link-href').text('route to View 1').click(() => redirectToView1()).init(),
                 ]).init(),
                 o('li').add([
-                    o('a').class('link-href').text('route to View 2').click(() => redirectToView2()).init(),
+                    oLink('/view2').class('link-href').text('route to View 2')
                 ]).init(),
             ]).init(),
             o('h2').text('Search parameters').init(),
@@ -58,10 +61,6 @@ function redirectToView1() {
     oRouter.redirect('/view1');
 }
 
-function redirectToView2() {
-    oRouter.redirect('/view2');
-}
-
 function addSearchParam() {
     const searchKey = document.getElementById('searchKeyInput').value;
     const searchValue = document.getElementById('searchValueInput').value;
@@ -77,7 +76,6 @@ function unsetSearchParam() {
 
 function addHash() {
     const hash = document.getElementById('hashInput').value;
-
     oRouter.setHash(hash);
 }
 

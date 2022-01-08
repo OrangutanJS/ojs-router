@@ -1,32 +1,20 @@
-import renderIfHtmlElementGiven from "./utils/renderIfHtmlElementGiven";
-import routesFilter from "./utils/routesFilter";
-import setOnPopStateEvent from "./utils/setOnPopStateEvent";
-import decodeSearchQuery from "./utils/decodeSearchQuery";
-import createUrlObject from "./utils/createUrlObject";
-import splitAndFilterPath from "./utils/splitAndFilterPath";
-import decodeParameters from "./utils/decodeParameters";
-import encodeSearchQuery from "./utils/encodeSearchQuery";
+import renderIfHtmlElementGiven from "../utils/renderIfHtmlElementGiven";
+import routesFilter from "../utils/routesFilter";
+import setOnPopStateEvent from "../utils/setOnPopStateEvent";
+import decodeSearchQuery from "../utils/decodeSearchQuery";
+import createUrlObject from "../utils/createUrlObject";
+import splitAndFilterPath from "../utils/splitAndFilterPath";
+import decodeParameters from "../utils/decodeParameters";
+import encodeSearchQuery from "../utils/encodeSearchQuery";
 
-/**
- * @property {string} originPrefix
- * @static
- * @description Set only if your origin url has a static prefix.
- * Example: http:/yourdomain.com/prefixExample -> originPrefix = '/prefixExample'
- * @property {function} defaultView
- * @static
- * @description default view for oRouter ('/' path).
- */
-
-//TODO: wykrywanie zmian w urlu np. dodanie hasha poza api oRoutera
-
-export default class oRouter {
-  static originPrefix = '';//TODO: setter or type secure
-  static routingTable = {};//TODO: setter or type secure
+export class oRouter {
+  static originPrefix = '';
+  static routingTable = {};
   static #routingParameters = {};
 
   static set defaultView(value) {
     if (!value || !(typeof value === 'function')) {
-      throw new Error('Not valid defaultView parametereter.');
+      return false;
     }
     oRouter.#defaultView = value;
   }
@@ -190,7 +178,7 @@ export default class oRouter {
     return encodeSearchQuery(oRouter.#routingParameters.searchParameters);
   }
 
-  //Section: private methods
+  // Section: private methods
   static #changeState(url) {
     const { pathname } = url;
     oRouter.#routingParameters.fullPath = url.href.replace(url.origin, '');
