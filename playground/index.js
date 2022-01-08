@@ -1,4 +1,4 @@
-import oRouter from '../src/oRouter';
+import { oRouter } from '../src/methods/oRouter';
 import Playground from './Playground';
 import o from 'ojs-core';
 import './main.css';
@@ -16,10 +16,6 @@ oRouter.route();
 function defaultView() {
     const playgroundView = new Playground();
     return playgroundView;
-    document.body.innerHTML = '';
-    document.body.appendChild(
-        playgroundView.init()
-    );
 }
 
 function view1() {
