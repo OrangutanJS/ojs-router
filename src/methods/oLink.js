@@ -1,9 +1,9 @@
 import o from 'ojs-core/npm/o.development.es';
 import { oRouter } from './oRouter';
 
-export function oLink(route) {
+export function oLink(route, replaceCurrentState = false) {
   if (!(this instanceof oLink))
-    return new oLink(route);
+    return new oLink(route, replaceCurrentState);
 
 
   this.element = o('a')
@@ -11,7 +11,7 @@ export function oLink(route) {
       e.preventDefault();
       e.stopPropagation();
       if (route) {
-        oRouter.redirect(route);
+        oRouter.redirect(route, {}, replaceCurrentState);
       }
     });
 }
@@ -73,9 +73,9 @@ oLink.prototype.text = function (text) {
   return this;
 };
 
-oLink.prototype.to = function (route) {
+oLink.prototype.to = function (route, replaceCurrentState = false) {
   this.element.click(() => {
-    oRouter.redirect(route);
+    oRouter.redirect(route, {}, replaceCurrentState);
   });
 
   return this;

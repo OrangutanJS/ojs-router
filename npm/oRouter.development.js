@@ -331,14 +331,15 @@ var oRouter = function () {
       return value;
     }
   }, {
-    key: "redirect",
-    value: function redirect(path, parameters) {
-      oRouter.route(path, parameters);
+    key: "route",
+    value: function route() {
+      oRouter.redirect();
     }
   }, {
-    key: "route",
-    value: function route(givenPath, givenParameters) {
-      setOnPopStateEvent(oRouter.route);
+    key: "redirect",
+    value: function redirect(givenPath, givenParameters) {
+      var replaceCurrentState = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+      setOnPopStateEvent(oRouter.redirect);
       var renderFunctionResult;
       var url = createUrlObject(givenPath, oRouter.originPrefix);
       _classStaticPrivateFieldSpecSet(oRouter, oRouter, _routingParameters, {
@@ -353,8 +354,9 @@ var oRouter = function () {
       }
       var splittedPath = splitAndFilterPath(url.pathname, oRouter.originPrefix);
       if (!splittedPath.length) {
-        _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
-        renderFunctionResult = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _defaultView).call(oRouter, _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters));
+        _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url, replaceCurrentState);
+        var defaultViewResult = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _defaultView).call(oRouter, _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters));
+        renderFunctionResult = defaultViewResult === null ? oRouter.routingTable['/'](_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters)) : defaultViewResult;
         renderIfHtmlElementGiven(renderFunctionResult);
         return true;
       }
@@ -365,14 +367,14 @@ var oRouter = function () {
         if (!oRouter.routingTable['404-notFound']) {
           return false;
         }
-        _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, _url);
+        _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, _url, replaceCurrentState);
         renderFunctionResult = oRouter.routingTable['404-notFound'](_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters));
         renderIfHtmlElementGiven(renderFunctionResult);
         return false;
       }
       var foundRoute = routesFiltered[0];
       Object.assign(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).parameters, decodeParameters(foundRoute, splittedPath));
-      _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
+      _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url, replaceCurrentState);
       renderFunctionResult = oRouter.routingTable[foundRoute.full](_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters));
       renderIfHtmlElementGiven(renderFunctionResult);
       return true;
@@ -380,44 +382,49 @@ var oRouter = function () {
   }, {
     key: "setSearchParameter",
     value: function setSearchParameter(key, value) {
+      var replaceCurrentState = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       if (!key || typeof key !== 'string' || _typeof(value) === 'object') return false;
-      return oRouter.setSearchParameters(_defineProperty({}, key, String(value)));
+      return oRouter.setSearchParameters(_defineProperty({}, key, String(value)), replaceCurrentState);
     }
   }, {
     key: "unsetSearchParameter",
     value: function unsetSearchParameter(key) {
+      var replaceCurrentState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       if (!_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).searchParameters[key]) return false;
       delete _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).searchParameters[key];
       var _classStaticPrivateFi2 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi2.url;
       var parametersStr = _classStaticPrivateMethodGet(oRouter, oRouter, _searchParametersToString).call(oRouter);
       url.search = "?".concat(parametersStr);
-      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
+      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url, replaceCurrentState);
     }
   }, {
     key: "setSearchParameters",
     value: function setSearchParameters(parameters) {
+      var replaceCurrentState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       if (_typeof(parameters) !== 'object') return false;
       if (!Object.keys(parameters).length) return true;
       var _classStaticPrivateFi3 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi3.url;
       url.search = _classStaticPrivateMethodGet(oRouter, oRouter, _searchParametersToString).call(oRouter, parameters);
-      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
+      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url, replaceCurrentState);
     }
   }, {
     key: "unsetSearchParametersAll",
     value: function unsetSearchParametersAll() {
+      var replaceCurrentState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var _classStaticPrivateFi4 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi4.url;
       var searchParameters = decodeSearchQuery(url.search);
       Object.keys(searchParameters).forEach(function (searchParameter) {
         return oRouter.unsetSearchParameter(searchParameter);
       });
-      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
+      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url, replaceCurrentState);
     }
   }, {
     key: "setHash",
     value: function setHash(hash) {
+      var replaceCurrentState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       if (!hash || _typeof(hash) === 'object') return false;
       hash = String(hash);
       var _classStaticPrivateFi5 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
@@ -428,11 +435,12 @@ var oRouter = function () {
       var alreadyInRegExp = new RegExp("#?".concat(hash, "(#|$)"), 'i');
       if (alreadyInRegExp.test(url.hash)) return true;
       url.hash += '#' + hash;
-      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
+      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url, replaceCurrentState);
     }
   }, {
     key: "unsetHash",
     value: function unsetHash(hash) {
+      var replaceCurrentState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
       if (!hash || _typeof(hash) === 'object') return false;
       hash = String(hash);
       var _classStaticPrivateFi6 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
@@ -442,18 +450,19 @@ var oRouter = function () {
       }
       var alreadyInRegExp = new RegExp("#?".concat(hash, "(#|$)"), 'i');
       url.hash = url.hash.replace(alreadyInRegExp, '');
-      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url);
+      return _classStaticPrivateMethodGet(oRouter, oRouter, _changeState).call(oRouter, url, replaceCurrentState);
     }
   }, {
     key: "unsetHashAll",
     value: function unsetHashAll() {
+      var replaceCurrentState = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
       var _classStaticPrivateFi7 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi7.url;
       var hashes = url.hash.split('#').filter(function (hash) {
         return hash !== '';
       });
       hashes.forEach(function (hash) {
-        return oRouter.unsetHash(hash);
+        return oRouter.unsetHash(hash, replaceCurrentState);
       });
     }
   }, {
@@ -463,6 +472,11 @@ var oRouter = function () {
       var _classStaticPrivateFi8 = _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters),
           url = _classStaticPrivateFi8.url;
       return alreadyInRegExp.test(url.hash);
+    }
+  }, {
+    key: "forward",
+    value: function forward() {
+      window.history.forward();
     }
   }, {
     key: "back",
@@ -478,11 +492,11 @@ function _searchParametersToString(searchParameters) {
   }
   return encodeSearchQuery(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).searchParameters);
 }
-function _changeState(url) {
-  var pathname = url.pathname;
+function _changeState(url, replaceCurrentState) {
+  var href = url.href;
   _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters).fullPath = url.href.replace(url.origin, '');
   try {
-    if (pathname === window.location.pathname) {
+    if (replaceCurrentState || href === window.location.href) {
       window.history.replaceState(JSON.parse(JSON.stringify(_classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters))), document.title, url);
     } else {
       var state = _objectSpread2(_objectSpread2({}, _classStaticPrivateFieldSpecGet(oRouter, oRouter, _routingParameters)), {}, {
@@ -571,6 +585,7 @@ function o(element) {
     if (!(this instanceof o)) {
         return new o(element);
     }
+    this._isoelement = true;
     if (element === 'fragment') {
         this.element = oFragment();
         return;
@@ -580,7 +595,6 @@ function o(element) {
         return;
     }
     this.element = document.createElement(element);
-    this._isoelement = true;
 }
 o.prototype.event = function (obj) {
     if (obj instanceof Array) {
@@ -699,12 +713,13 @@ o.prototype.disabled = function (disabled) { return inputFunction(this, 'disable
 o.prototype.required = function (required) { return inputFunction(this, 'required', required) };
 
 function oLink(route) {
-  if (!(this instanceof oLink)) return new oLink(route);
+  var replaceCurrentState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+  if (!(this instanceof oLink)) return new oLink(route, replaceCurrentState);
   this.element = o('a').click(function (e) {
     e.preventDefault();
     e.stopPropagation();
     if (route) {
-      oRouter.redirect(route);
+      oRouter.redirect(route, {}, replaceCurrentState);
     }
   });
 }
@@ -753,8 +768,9 @@ oLink.prototype.text = function (text) {
   return this;
 };
 oLink.prototype.to = function (route) {
+  var replaceCurrentState = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
   this.element.click(function () {
-    oRouter.redirect(route);
+    oRouter.redirect(route, {}, replaceCurrentState);
   });
   return this;
 };
